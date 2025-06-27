@@ -38,7 +38,7 @@
 
     ```bash
     
-     curl -O https://github.com/Karnemorkon/synapse_auto/blob/f6452e14cfb60a9d7073138532abd3e63b8741a7/synapse_auto.sh
+     curl -O https://raw.githubusercontent.com/Karnemorkon/synapse_auto/refs/heads/main/synapse_auto.sh
     ```
 
 2.  **Надайте права на виконання:**
