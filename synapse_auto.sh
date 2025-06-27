@@ -394,22 +394,21 @@ generate_bridge_config() {
     local bridge_dir_name="$2"
     local bridge_image_name="$3"
     local bridge_config_file_path="$BASE_DIR/$bridge_dir_name/config/config.yaml"
+    local bridge_registration_file_path="$BASE_DIR/$bridge_dir_name/config/registration.yaml" # New variable
 
     log_echo "⏳ Генерую конфігураційний файл для $bridge_name_human ($bridge_config_file_path)..."
-    # Переконуємося, що директорія існує
     mkdir -p "$BASE_DIR/$bridge_dir_name/config"
 
-    # Використовуємо sudo для docker run, оскільки команда може потребувати створення файлів у системних директоріях (хоча тут це /data всередині контейнера)
-    # Перенаправляємо stdout (>), а stderr додаємо до основного логу (2>&1)
+    # --- ВИПРАВЛЕННЯ: Додано змінні оточення MAUTRIX_CONFIG_PATH та MAUTRIX_REGISTRATION_PATH
     if sudo docker run --rm \
         -v "$BASE_DIR/$bridge_dir_name/config:/data" \
-        -e CONFIG_PATH=/data/config.yaml \
+        -e MAUTRIX_CONFIG_PATH=/data/config.yaml \
+        -e MAUTRIX_REGISTRATION_PATH=/data/registration.yaml \
         "$bridge_image_name" -g > "$bridge_config_file_path" 2>> "$FULL_LOG_PATH_FOR_SCRIPT"; then
         sudo chmod 600 "$bridge_config_file_path"
         log_echo "✅ Конфігураційний файл для $bridge_name_human згенеровано та встановлено права."
     else
         log_echo "❌ Помилка генерації конфігураційного файлу для $bridge_name_human. Див. деталі вище або в $FULL_LOG_PATH_FOR_SCRIPT."
-        # Можна додати exit 1, якщо це критично
     fi
 }
 
@@ -451,7 +450,7 @@ fi
 
 if [ "$ENABLE_FEDERATION" = "no" ]; then
     log_echo "⏳ Вимикаю федерацію в $HOMESERVER_CONFIG..."
-    if ! grep -q "federation_enabled: false" "$HOMESERVER_CONFIG"; then # Запобігання дублюванню
+    if ! grep -q "federation_enabled: false" "$HOMESERVER_CONFIG"; then
         sed -i "/#federation_client_minimum_tls_version:/a \ \ federation_enabled: false" "$HOMESERVER_CONFIG"
     fi
     log_echo "✅ Федерацію вимкнено."
@@ -460,7 +459,7 @@ else
 fi
 
 log_echo "⏳ Додаю налаштування мостів до $HOMESERVER_CONFIG..."
-if ! grep -q "app_service_config_files:" "$HOMESERVER_CONFIG"; then # Запобігання дублюванню
+if ! grep -q "app_service_config_files:" "$HOMESERVER_CONFIG"; then
 cat <<EOF >> "$HOMESERVER_CONFIG"
 
 # Mautrix Bridges Configuration
@@ -530,16 +529,25 @@ fi
 
 # Прибрано Крок 4.5: Перевірка доступності портів
 
-# --- Крок 5: Створення файлу docker-compose.yml ---
+# --- Крок 5: Створення файлу docker-compose.yml та .env ---
 log_echo "-------------------------------------------------"
-log_echo "Крок: Створення файлу docker-compose.yml у $BASE_DIR/docker-compose.yml"
+log_echo "Крок: Створення файлів docker-compose.yml та .env"
 log_echo "-------------------------------------------------"
 
-SYNAPSE_PORTS=""
+# --- ВИПРАВЛЕННЯ: Створюємо .env файл для Cloudflare Token
 if [ "$USE_CLOUDFLARE_TUNNEL" = "yes" ]; then
-    SYNAPSE_PORTS=""
-else
-    SYNAPSE_PORTS="- \"8008:8008\"\n      - \"8448:8448\""
+    log_echo "⏳ Створюю файл .env з токеном Cloudflare Tunnel..."
+    echo "CLOUDFLARE_TUNNEL_TOKEN=\"$CLOUDFLARE_TUNNEL_TOKEN\"" > "$BASE_DIR/.env"
+    log_echo "✅ Файл .env створено."
+fi
+
+# --- ВИПРАВЛЕННЯ: Порти для Synapse завжди експонуються для внутрішнього Docker-з'єднання, незалежно від тунелю
+SYNAPSE_INTERNAL_PORTS="8008:8008\n      - 8448:8448" # Always expose ports for internal services
+
+SYNAPSE_EXTERNAL_PORTS=""
+if [ "$USE_CLOUDFLARE_TUNNEL" != "yes" ]; then
+    # Only expose to host if not using Cloudflare Tunnel
+    SYNAPSE_EXTERNAL_PORTS="- \"8008:8008\"\n      - \"8448:8448\""
 fi
 
 cat <<EOF > "$BASE_DIR/docker-compose.yml"
@@ -573,7 +581,10 @@ services:
       SYNAPSE_REPORT_STATS: "no"
       SYNAPSE_CONFIG_PATH: /data/homeserver.yaml
     ports:
-$SYNAPSE_PORTS
+      - "$SYNAPSE_INTERNAL_PORTS" # Internal ports for other containers
+    expose:
+      - "8008"
+      - "8448"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8008/_matrix/client/versions || exit 1"]
       interval: 10s
@@ -596,10 +607,10 @@ EOF
 if [ "$INSTALL_ELEMENT" = "yes" ]; then
 cat <<EOF >> "$BASE_DIR/docker-compose.yml"
   element:
-    image: nginx:alpine
+    image: vectorim/element-web:latest # --- ВИПРАВЛЕННЯ: Використовуємо офіційний образ Element
     restart: unless-stopped
     volumes:
-      - ./element:/usr/share/nginx/html:ro
+      - ./element/config.json:/app/config.json:ro
     ports:
       - "80:80"
 EOF
@@ -608,7 +619,7 @@ fi
 if [ "$INSTALL_SIGNAL_BRIDGE" = "yes" ]; then
 cat <<EOF >> "$BASE_DIR/docker-compose.yml"
   signal-bridge:
-    image: $MAUTRIX_DOCKER_REGISTRY/mautrix-signal:latest
+    image: ${MAUTRIX_DOCKER_REGISTRY}/signal:latest
     restart: unless-stopped
     depends_on:
       - synapse
@@ -626,7 +637,7 @@ fi
 if [ "$INSTALL_WHATSAPP_BRIDGE" = "yes" ]; then
 cat <<EOF >> "$BASE_DIR/docker-compose.yml"
   whatsapp-bridge:
-    image: $MAUTRIX_DOCKER_REGISTRY/mautrix-whatsapp:latest
+    image: ${MAUTRIX_DOCKER_REGISTRY}/whatsapp:latest
     restart: unless-stopped
     depends_on:
       - synapse
@@ -644,7 +655,7 @@ fi
 if [ "$INSTALL_TELEGRAM_BRIDGE" = "yes" ]; then
 cat <<EOF >> "$BASE_DIR/docker-compose.yml"
   telegram-bridge:
-    image: $MAUTRIX_DOCKER_REGISTRY/mautrix-telegram:latest
+    image: ${MAUTRIX_DOCKER_REGISTRY}/telegram:latest
     restart: unless-stopped
     depends_on:
       - synapse
@@ -662,7 +673,7 @@ fi
 if [ "$INSTALL_DISCORD_BRIDGE" = "yes" ]; then
 cat <<EOF >> "$BASE_DIR/docker-compose.yml"
   discord-bridge:
-    image: $MAUTRIX_DOCKER_REGISTRY/mautrix-discord:latest
+    image: ${MAUTRIX_DOCKER_REGISTRY}/discord:latest
     restart: unless-stopped
     depends_on:
       - synapse
@@ -682,9 +693,9 @@ cat <<EOF >> "$BASE_DIR/docker-compose.yml"
   cloudflared:
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
-    command: tunnel run --token $CLOUDFLARE_TUNNEL_TOKEN
+    command: tunnel run --token \$$CLOUDFLARE_TUNNEL_TOKEN
     environment:
-      TUNNEL_TOKEN: $CLOUDFLARE_TUNNEL_TOKEN
+      - TUNNEL_TOKEN=\$$CLOUDFLARE_TUNNEL_TOKEN
 EOF
 fi
 log_echo "✅ Файл docker-compose.yml створено."
@@ -723,15 +734,12 @@ log_echo "⏳ Генерую файли реєстрації для мостів
 
 generate_bridge_registration() {
     local bridge_name_human="$1"
-    local bridge_service_name_in_compose="$2" # Наприклад, "signal-bridge"
-    local bridge_registration_file_path_in_synapse_container="$3" # Наприклад, "/data/signal-registration.yaml"
-    local bridge_appservice_id="$4" # Наприклад, "io.mau.bridge.signal"
-    # Порт моста зазвичай 8000 для Mautrix мостів
+    local bridge_service_name_in_compose="$2"
+    local bridge_registration_file_path_in_synapse_container="$3"
+    local bridge_appservice_id="$4"
     local bridge_internal_url="http://${bridge_service_name_in_compose}:8000"
 
     log_echo "Генерую реєстраційний файл для $bridge_name_human..."
-    # Переконуємося, що ми в директорії $BASE_DIR для docker compose exec
-    # cd "$BASE_DIR" # Це вже робиться перед викликом цієї функції
     if sudo docker compose exec synapse generate_registration \
         --force \
         -u "$bridge_internal_url" \
@@ -788,7 +796,7 @@ log_echo "   - Synapse Admin Panel доступна за адресою: http://
 log_echo ""
 log_echo "4. Для управління мостами (Signal, WhatsApp тощо):"
 log_echo "   a. Зайдіть у Portainer (якщо встановлено) -> Stacks -> matrix."
-log_echo "   b. Перейдіть до відповідного контейнера моста (наприклад, 'matrix-signal-bridge-1')." # Назви можуть трохи відрізнятися
+log_echo "   b. Перейдіть до відповідного контейнера моста (наприклад, 'matrix-signal-bridge-1')."
 log_echo "   c. Перегляньте 'Logs' для інструкцій з реєстрації моста. Зазвичай це команди типу \`!signal login\` в Matrix."
 log_echo ""
 log_echo "5. Для створення першого адміністративного користувача Matrix (якщо публічна реєстрація вимкнена або ви хочете створити його вручну):"
