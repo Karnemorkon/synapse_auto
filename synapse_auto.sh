@@ -414,19 +414,19 @@ generate_bridge_config() {
 }
 
 if [ "$INSTALL_SIGNAL_BRIDGE" = "yes" ]; then
-    generate_bridge_config "Signal Bridge" "signal-bridge" "$MAUTRIX_DOCKER_REGISTRY/mautrix-signal:latest"
+    generate_bridge_config "Signal Bridge" "signal-bridge" "$MAUTRIX_DOCKER_REGISTRY/mautrix/signal:latest"
 fi
 
 if [ "$INSTALL_WHATSAPP_BRIDGE" = "yes" ]; then
-    generate_bridge_config "WhatsApp Bridge" "whatsapp-bridge" "$MAUTRIX_DOCKER_REGISTRY/mautrix-whatsapp:latest"
+    generate_bridge_config "WhatsApp Bridge" "whatsapp-bridge" "$MAUTRIX_DOCKER_REGISTRY/mautrix/whatsapp:latest"
 fi
 
 if [ "$INSTALL_TELEGRAM_BRIDGE" = "yes" ]; then
-    generate_bridge_config "Telegram Bridge" "telegram-bridge" "$MAUTRIX_DOCKER_REGISTRY/mautrix-telegram:latest"
+    generate_bridge_config "Telegram Bridge" "telegram-bridge" "$MAUTRIX_DOCKER_REGISTRY/mautrix/telegram:latest"
 fi
 
 if [ "$INSTALL_DISCORD_BRIDGE" = "yes" ]; then
-    generate_bridge_config "Discord Bridge" "discord-bridge" "$MAUTRIX_DOCKER_REGISTRY/mautrix-discord:latest"
+    generate_bridge_config "Discord Bridge" "discord-bridge" "$MAUTRIX_DOCKER_REGISTRY/mautrix/discord:latest"
 fi
 
 # --- Крок 4: Налаштування конфігураційних файлів ---
