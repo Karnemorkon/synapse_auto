@@ -38,6 +38,7 @@
     Скопіюйте файл `synapse_auto.sh` на ваш сервер.
 
     ```bash
+     sudo apt update -y && sudo apt upgrade
      sudo apt install curl
      curl -O https://raw.githubusercontent.com/Karnemorkon/synapse_auto/refs/heads/main/synapse_auto.sh
     ```
