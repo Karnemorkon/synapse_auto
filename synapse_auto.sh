@@ -47,7 +47,7 @@ log_echo "" # Еквівалент echo
 # --- Крок 1: Інтерактивне збирання інформації ---
 log_echo "--- Крок 1: Інтерактивне збирання інформації ---"
 BASE_DIR=$(pwd)"/matrix" # Базова директорія для всіх файлів Matrix
-MAUTRIX_DOCKER_REGISTRY="dock.mau.dev" # Правильний домен для Docker образів Mautrix Bridges
+MAUTRIX_DOCKER_REGISTRY="dock.mau.dev/mautrix" # Повний шлях до Mautrix образів на dock.mau.dev
 ELEMENT_WEB_VERSION="v1.11.104" # Версія Element Web для завантаження. Перевірте актуальну на https://github.com/element-hq/element-web/releases
 
 # Перевіряємо, чи існує базова директорія
@@ -414,19 +414,19 @@ generate_bridge_config() {
 }
 
 if [ "$INSTALL_SIGNAL_BRIDGE" = "yes" ]; then
-    generate_bridge_config "Signal Bridge" "signal-bridge" "$MAUTRIX_DOCKER_REGISTRY/mautrix/signal:latest"
+    generate_bridge_config "Signal Bridge" "signal-bridge" "$MAUTRIX_DOCKER_REGISTRY/signal:latest"
 fi
 
 if [ "$INSTALL_WHATSAPP_BRIDGE" = "yes" ]; then
-    generate_bridge_config "WhatsApp Bridge" "whatsapp-bridge" "$MAUTRIX_DOCKER_REGISTRY/mautrix/whatsapp:latest"
+    generate_bridge_config "WhatsApp Bridge" "whatsapp-bridge" "$MAUTRIX_DOCKER_REGISTRY/whatsapp:latest"
 fi
 
 if [ "$INSTALL_TELEGRAM_BRIDGE" = "yes" ]; then
-    generate_bridge_config "Telegram Bridge" "telegram-bridge" "$MAUTRIX_DOCKER_REGISTRY/mautrix/telegram:latest"
+    generate_bridge_config "Telegram Bridge" "telegram-bridge" "$MAUTRIX_DOCKER_REGISTRY/telegram:latest"
 fi
 
 if [ "$INSTALL_DISCORD_BRIDGE" = "yes" ]; then
-    generate_bridge_config "Discord Bridge" "discord-bridge" "$MAUTRIX_DOCKER_REGISTRY/mautrix/discord:latest"
+    generate_bridge_config "Discord Bridge" "discord-bridge" "$MAUTRIX_DOCKER_REGISTRY/discord:latest"
 fi
 
 # --- Крок 4: Налаштування конфігураційних файлів ---
