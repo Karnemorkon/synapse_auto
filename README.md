@@ -37,12 +37,12 @@
 Замініть `URL_ДО_ВАШОГО_RAW_ФАЙЛУ_synapse_auto.sh` на актуальне посилання на сирий файл `synapse_auto.sh` у вашому репозиторії (наприклад, на GitHub, GitLab тощо).
 
 ```bash
-curl -sSL URL_ДО_ВАШОГО_RAW_ФАЙЛУ_synapse_auto.sh | sudo bash
+curl -sSL [synapse_auto.sh](https://raw.githubusercontent.com/Karnemorkon/synapse_auto/40c5bf31502e0b8ccfcc794322effe48b2c4acb2/synapse_auto.sh) | sudo bash
 ```
 
 Або, якщо ви хочете спочатку переглянути скрипт:
 ```bash
-curl -sSL URL_ДО_ВАШОГО_RAW_ФАЙЛУ_synapse_auto.sh -o synapse_auto.sh
+curl -sSL [synapse_auto.sh](https://raw.githubusercontent.com/Karnemorkon/synapse_auto/40c5bf31502e0b8ccfcc794322effe48b2c4acb2/synapse_auto.sh) -o synapse_auto.sh
 chmod +x synapse_auto.sh
 # Тут ви можете переглянути вміст synapse_auto.sh
 sudo ./synapse_auto.sh
@@ -54,8 +54,8 @@ sudo ./synapse_auto.sh
     Скопіюйте файл `synapse_auto.sh` на ваш сервер.
 
     ```bash
-    # Приклад завантаження за допомогою curl (замініть URL на актуальний)
-    # curl -O https://your-repo-url/synapse_auto.sh
+    # Приклад завантаження за допомогою curl
+    # curl -O https://github.com/Karnemorkon/synapse_auto/releases/download/synapse_auto/synapse_auto.sh
     ```
 
 2.  **Надайте права на виконання:**
