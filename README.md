@@ -34,7 +34,6 @@
 Ви можете завантажити та запустити скрипт однією командою.
 **Увага:** Використовуйте цей метод тільки якщо ви повністю довіряєте джерелу скрипта, оскільки код буде завантажено та виконано негайно.
 
-Замініть `URL_ДО_ВАШОГО_RAW_ФАЙЛУ_synapse_auto.sh` на актуальне посилання на сирий файл `synapse_auto.sh` у вашому репозиторії (наприклад, на GitHub, GitLab тощо).
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/Karnemorkon/synapse_auto/40c5bf31502e0b8ccfcc794322effe48b2c4acb2/synapse_auto.sh | sudo bash
