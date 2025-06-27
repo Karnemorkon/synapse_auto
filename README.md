@@ -29,23 +29,7 @@
 *   (Опціонально) Акаунт Cloudflare та токен тунелю, якщо планується використання Cloudflare Tunnel.
 *   (Опціонально) Встановлений та налаштований Nginx Proxy Manager, якщо планується його використання.
 
-## Швидкий запуск (однією командою)
 
-Ви можете завантажити та запустити скрипт однією командою.
-**Увага:** Використовуйте цей метод тільки якщо ви повністю довіряєте джерелу скрипта, оскільки код буде завантажено та виконано негайно.
-
-
-```bash
-curl -sSL https://raw.githubusercontent.com/Karnemorkon/synapse_auto/40c5bf31502e0b8ccfcc794322effe48b2c4acb2/synapse_auto.sh | sudo bash
-```
-
-Або, якщо ви хочете спочатку переглянути скрипт:
-```bash
-curl -sSL https://raw.githubusercontent.com/Karnemorkon/synapse_auto/40c5bf31502e0b8ccfcc794322effe48b2c4acb2/synapse_auto.sh -o synapse_auto.sh
-chmod +x synapse_auto.sh
-# Тут ви можете переглянути вміст synapse_auto.sh
-sudo ./synapse_auto.sh
-```
 
 ## Інструкція з використання
 
@@ -53,8 +37,8 @@ sudo ./synapse_auto.sh
     Скопіюйте файл `synapse_auto.sh` на ваш сервер.
 
     ```bash
-    # Приклад завантаження за допомогою curl
-    # curl -O https://github.com/Karnemorkon/synapse_auto/releases/download/synapse_auto/synapse_auto.sh
+    
+     curl -O https://github.com/Karnemorkon/synapse_auto/blob/f6452e14cfb60a9d7073138532abd3e63b8741a7/synapse_auto.sh
     ```
 
 2.  **Надайте права на виконання:**
