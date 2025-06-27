@@ -528,57 +528,7 @@ else
     log_echo "✅ Встановлення Element Web пропущено."
 fi
 
-# --- Крок 4.5: Перевірка доступності портів ---
-log_echo "-------------------------------------------------"
-log_echo "Крок: Перевірка доступності портів"
-log_echo "-------------------------------------------------"
-
-check_port_available() {
-    local port_to_check=$1
-    local service_name=$2
-    log_echo "⏳ Перевіряю доступність порту $port_to_check для $service_name..."
-    if command -v ss &> /dev/null && ss -tuln | grep -q ":$port_to_check\s" ; then
-        log_echo "❌ Помилка: Порт $port_to_check вже використовується іншим процесом (перевірено за допомогою ss)."
-        echo "Будь ласка, зупиніть сервіс, що використовує цей порт."
-        echo "Ви можете використати 'sudo ss -tulnp | grep :$port_to_check' для ідентифікації процесу."
-        return 1
-    elif command -v netstat &> /dev/null && netstat -tuln | grep -q ":$port_to_check\s" ; then
-        log_echo "❌ Помилка: Порт $port_to_check вже використовується іншим процесом (перевірено за допомогою netstat)."
-        echo "Будь ласка, зупиніть сервіс, що використовує цей порт."
-        echo "Ви можете використати 'sudo netstat -tulnp | grep :$port_to_check' для ідентифікації процесу."
-        return 1
-    elif ! command -v ss &> /dev/null && ! command -v netstat &> /dev/null; then
-        log_echo "⚠️ Попередження: Команди 'ss' та 'netstat' не знайдено. Не можу перевірити доступність порту $port_to_check."
-        return 0
-    else
-        log_echo "✅ Порт $port_to_check вільний для $service_name."
-        return 0
-    fi
-}
-
-PORTS_OK=true
-if [ "$INSTALL_PORTAINER" = "yes" ]; then
-    check_port_available 9443 "Portainer HTTPS" || PORTS_OK=false
-    check_port_available 8000 "Portainer Edge Agent" || PORTS_OK=false
-fi
-check_port_available 8080 "Synapse Admin Panel" || PORTS_OK=false
-
-if [ "$INSTALL_ELEMENT" = "yes" ]; then
-    if [ "$USE_CLOUDFLARE_TUNNEL" = "no" ] && [ "$USE_NPM" = "no" ]; then
-        check_port_available 80 "Element Web (HTTP)" || PORTS_OK=false
-    fi
-fi
-if [ "$USE_CLOUDFLARE_TUNNEL" = "no" ]; then
-    check_port_available 8008 "Synapse Client-Server API" || PORTS_OK=false
-    check_port_available 8448 "Synapse Federation API" || PORTS_OK=false
-fi
-
-if [ "$PORTS_OK" = false ]; then
-    log_echo "❌ Виявлено конфлікти портів. Будь ласка, вирішіть їх перед продовженням або переналаштуйте сервіси, що їх займають."
-    exit 1
-fi
-log_echo "✅ Усі необхідні порти виглядають вільними."
-echo
+# Прибрано Крок 4.5: Перевірка доступності портів
 
 # --- Крок 5: Створення файлу docker-compose.yml ---
 log_echo "-------------------------------------------------"
