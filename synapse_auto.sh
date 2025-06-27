@@ -547,7 +547,7 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:alpine
     restart: unless-stopped
     volumes:
       - ./synapse/data/postgres:/var/lib/postgresql/data
